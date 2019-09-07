@@ -16,9 +16,9 @@ Now the question is, why don't we also apply this mindset to our applications? T
 
 If, on top of that we add the capabilites of the **DevOps** philosophy, we will be creating an environment where we can continuosly deliver value as we speed up internal processes by closing the gap between Development and Operations.
 
-## Hands on Docker
+## Hello Docker
 
-> First of all, make sure that you have Docker installed on your machine. You can follow the official [guide](https://docs.docker.com/install/linux/docker-ce/ubuntu/).
+> Make sure that you have Docker installed on your machine. You can follow the official [guide](https://docs.docker.com/install/linux/docker-ce/ubuntu/).
 
 To get in touch with containerization we will start by introducing a possible use case. Suppose that we have an application that interacts with a Postgres DB. We will need to build some unit tests that also require this DB connection but we want to skip the hassle of locally installing Postgres. To do so, we can use Docker to create a container with a running database for us.
 
@@ -57,9 +57,41 @@ This happens because we need to open the ports of the container. Let's remove th
 docker run -p 5432:5432 --name some-postgres -e POSTGRES_PASSWORD=mysecretpassword -d postgres
 ```
 
-Which will return the container. What we've done here is - apart from setting a pwd - specifying a link between `LOCAL_PORT:CONTAINER_PORT`. Now we should be able to really connect to that db:
+Which will return the container. What we've done here - apart from setting a pwd - is specifying a link between `LOCAL_PORT:CONTAINER_PORT`. Now we should be able to really connect to that db:
 
 ```bash
 nc -vz localhost 5432
 Connection to localhost 5432 port [tcp/postgresql] succeeded!
 ```
+
+## Building an Application
+
+After getting our db ready, it's time we interact with it. To do so, there is a Python flask application `app.py` that acts as a db client to which we'll port our queries. But instead of directly running the application, we will build a docker container to host it. The files used to create Docker Images are called `Dockerfile`.
+
+If we examine the one provided we can see the following steps:
+1. `FROM` specifies the `Base Image`, i.e. another Docker image used as a foundation for ours.
+2. `WORKDIR` sets the path on which the commands will run.
+3. `COPY` puts our application into the `WORKDIR`. Note how we will need to build the Docker where this file is accessible and the path matches the one here.
+4. `RUN` to trigger some commands.
+5. We also set an `ARG` so that we can set the application port when building the image.
+6. `EXPOSE` the application port IN the container.
+7. `CMD` to run the application at container launch.
+
+Now that this is clear, let's build the image:
+
+```bash
+docker build --build-arg APP_PORT=5000 --tag=pmbrull/python-flask-example .
+```
+> OBS: `tag` specifies the name we want to set to our image. It usually starts with <userName>/<imageName>.
+
+We can now check that the image is created with `docker image ls` and finally run a container with it:
+
+```bash
+docker run -e "PORT=5000" -p 5001:5000 pmbrull/python-flask-example
+```
+
+Note how we linked our 5001 port with container's 5000. Moreover, we built the Python app to be flexible enough so that the port used is an environment variable. We can set environment variables with the option `-e`. Building applications following these guidelines allow for better reusability.
+
+## Testing the Application
+
+
