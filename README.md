@@ -92,6 +92,28 @@ docker run -e "PORT=5000" -p 5001:5000 pmbrull/python-flask-example
 
 Note how we linked our 5001 port with container's 5000. Moreover, we built the Python app to be flexible enough so that the port used is an environment variable. We can set environment variables with the option `-e`. Building applications following these guidelines allow for better reusability.
 
-## Testing the Application
+## Docker Network
 
+When building applications from scratch we need to make sure that all containers can understand each other, meaning that they all run in the same network. To do so, Docker has some built-in features regarding networks. What we could do is creating a network `docker network create my-net` and then run the container with the `--net my-net` flag.
 
+```bash
+docker run --name=some-postgres --net=my-net -e POSTGRES_PASSWORD=mysecretpassword -p 5432:5432 -d postgres 
+docker run -e "PORT=5000" -e "SERVICE_POSTGRES_SERVICE_HOST=some-postgres:5432" -p 5001:5000 --net my-net -d pmbrull/python-flask-example
+```
+
+## Testing the Manual Application
+
+To make sure that everything is running as expected we will run the `post_query.sh` script, where the first argument specifies in which machine the flask app is running, and then we pass the port and a query.
+
+```bash
+sh scripts/post_query.sh localhost 5001 "create table account (id_user serial PRIMARY KEY, username VARCHAR(50) NOT NULL)"
+# Should return OK
+sh scripts/post_query.sh localhost 5001 "insert into account (username) values ('pmbrull')"
+# Should return OK
+sh scripts/post_query.sh localhost 5001 "select * from account"
+# Should return a json with the result
+```
+
+We have been able to prepare a fully containerized working application. However, we have started with the manual style to understand the basics of Docker and have a quick view of what a containerized application actually represents. Luckily, there are better ways of handling these scenarios. One of the most common is **Docker Compose**.
+
+## Docker Compose
