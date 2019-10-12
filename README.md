@@ -117,3 +117,27 @@ sh scripts/post_query.sh localhost 5001 "select * from account"
 We have been able to prepare a fully containerized working application. However, we have started with the manual style to understand the basics of Docker and have a quick view of what a containerized application actually represents. Luckily, there are better ways of handling these scenarios. One of the most common is **Docker Compose**.
 
 ## Docker Compose
+
+With compose we still need to have the Docker images we want to use. However, it is useful in terms of setting up a multi-container application as it automatically handles aspects such as network or dependencies between containers.
+
+> You can find further information on how to install Docker Compose in the [docs](https://docs.docker.com/compose/install/)
+
+Let's address now the given compose file `docker-compose.yml` and discuss the different elements that we can find there:
+
+1. `services` lists down all the docker containers that we need.
+2. Then, for each service, we specify a name. In our case, those are `postgres` and `flask`.
+3. `container_name` is useful when reaching out to other services. In our case, we call the postgres db from flask just by specifying the `some-postgres` host.
+4. `volumes` are a big deal when working with databases. There we are mapping a local directory with another inside the container. This means that using volumes we can persist data during restarts!
+5. `depends_on` let's us create a hyerarchy in the containers. We will not run the flask image until the postgres database has finished deploying.
+
+Now we can just run `docker-compose up` and we will have everything working fine again. Let's inspect the networks:
+
+```bash
+docker network ls
+```
+
+We see that there is one called `k8s-workshop_default`, so let's run `docker inspect k8s-workshop_default`. There we will see our two containers created from the docker compose.
+
+Moreover, with this method we've been able to set some environment variables by using the `.env` file. We can check what is the final version of the compose file after putting the variables by running `docker-compose config`.
+
+We can now run the same tests as before to check that everything is running as expected.

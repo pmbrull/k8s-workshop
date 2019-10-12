@@ -1,0 +1,27 @@
+version: "3"
+services:
+  postgres:
+    image: postgres
+    container_name: some-postgres
+    ports:
+      - 5432:5432
+    environment:
+      - POSTGRES_PASSWORD
+    volumes:
+      - dbdata:/var/lib/postgresql/data
+  flask:
+    image: pmbrull/python-flask-example
+    command: python app.py
+    depends_on:
+      - postgres
+    ports:
+      - 5001:5000
+    environment:
+      - SERVICE_POSTGRES_SERVICE_HOST
+      - POSTGRES_DB_USER
+      - POSTGRES_DB_PSW
+    volumes:
+      - .:/app/
+volumes:
+  dbdata:
+    driver: local
