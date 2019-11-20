@@ -20,7 +20,7 @@ If, on top of that we add the capabilites of the **DevOps** philosophy, we will 
 
 > Make sure that you have Docker installed on your machine. You can follow the official [guide](https://docs.docker.com/install/linux/docker-ce/ubuntu/).
 
-To get in touch with containerization we will start by introducing a possible use case. Suppose that we have an application that interacts with a Postgres DB. We will need to build some unit tests that also require this DB connection but we want to skip the hassle of locally installing Postgres. To do so, we can use Docker to create a container with a running database for us.
+To get in touch with containerization we will start by introducing a possible use case. Suppose that we have an application that interacts with a Postgres DB but we want to skip the hassle of locally installing Postgres. To do so, we can use Docker to create a container with a running database for us.
 
 As we have online repositories such as [Maven](https://mvnrepository.com/) or [Pypi](https://pypi.org/) for both Jars and Python libraries, we also have a repository for Docker Images: [Docker Hub](https://hub.docker.com/).
 
@@ -36,7 +36,7 @@ docker run --name some-postgres postgres
 
 > OBS: We could have just run `docker run` and if the image was not in the machine, it would have automatically been pulled.
 
-We should be able to see some output from that command above. However, let's make sure that everything is running as expected:
+We should be able to see some output from that command above. However, let's make sure that everything is running as expected by [listing](https://docs.docker.com/engine/reference/commandline/ps/) all the containers in our machine:
 
 ```bash
 docker ps -a                                                                                                                                                                                                                   
@@ -51,29 +51,31 @@ nc -vz localhost 5432
 nc: connect to localhost port 5432 (tcp) failed: Connection refused
 ```
 
-This happens because we need to open the ports of the container. Let's remove the current container with `docker rm -f <containerID>` and prepare a more involved `run` command:
+We tried to connect to our localhost (where the container is running) in the specified port, but we can't! This happens because we need to open the ports of the container. Let's remove the current container with `docker rm -f <containerID>` and prepare a more involved `run` command:
 
 ```bash
 docker run -p 5432:5432 --name some-postgres -e POSTGRES_PASSWORD=mysecretpassword -d postgres
 ```
 
-Which will return the container. What we've done here - apart from setting a pwd - is specifying a link between `LOCAL_PORT:CONTAINER_PORT`. Now we should be able to really connect to that db:
+Which will return the container. What we've done here - apart from setting a pwd as an environment variable - is specifying a link between `LOCAL_PORT:CONTAINER_PORT`. Now we should be able to really connect to that db:
 
 ```bash
 nc -vz localhost 5432
 Connection to localhost 5432 port [tcp/postgresql] succeeded!
 ```
 
+> OBS: Note how we also used the `-d` option, which runs the container **detached** from the terminal session.
+
 ## Building an Application
 
-After getting our db ready, it's time we interact with it. To do so, there is a Python flask application `app.py` that acts as a db client to which we'll port our queries. But instead of directly running the application, we will build a docker container to host it. The files used to create Docker Images are called `Dockerfile`.
+After getting our db ready, it's time we interact with it. To do so, there is a Python flask application `app.py` that acts as a db client to which we'll run our queries to. But instead of directly running the application, we will build a docker container to host it. The files used to create Docker Images are called `Dockerfile`.
 
 If we examine the one provided we can see the following steps:
 1. `FROM` specifies the `Base Image`, i.e. another Docker image used as a foundation for ours.
 2. `WORKDIR` sets the path on which the commands will run.
 3. `COPY` puts our application into the `WORKDIR`. Note how we will need to build the Docker where this file is accessible and the path matches the one here.
 4. `RUN` to trigger some commands.
-5. We also set an `ARG` so that we can set the application port when building the image.
+5. We also set an `ARG` (argument) so that we can set the application port when building the image.
 6. `EXPOSE` the application port IN the container.
 7. `CMD` to run the application at container launch.
 
@@ -82,6 +84,9 @@ Now that this is clear, let's build the image:
 ```bash
 docker build --build-arg APP_PORT=5000 --tag=pmbrull/python-flask-example .
 ```
+
+Building an image is like compiling a piece of code, where we make sure that it is able to spin up working containers.
+
 > OBS: `tag` specifies the name we want to set to our image. It usually starts with <userName>/<imageName>.
 
 We can now check that the image is created with `docker image ls` and finally run a container with it:
