@@ -146,3 +146,36 @@ We see that there is one called `k8s-workshop_default`, so let's run `docker ins
 Moreover, with this method we've been able to set some environment variables by using the `.env` file. We can check what is the final version of the compose file after putting the variables by running `docker-compose config`.
 
 We can now run the same tests as before to check that everything is running as expected.
+
+## Kubernetes
+
+> OBS: Why k8s? Devs usually want to shorten terms so k8s stands for k-ubernete-s, where the mid part consists of 8 letters. The same shortening is applied to web modules such as internationalization, which end up being specified as i18n.
+
+Kubernetes is a platform created to manage containerized applications. It can help us in setting components such as Load Balancing among our containers, storage orchestration (volumes), automated rollbacks, self-healing if any container fails and secret configuration. Now, instead of going through all the [docs](https://kubernetes.io/docs/concepts/overview/what-is-kubernetes/) and explaining the different parts, we will have a brief overview of the different components to set up the same Python + Postgres application in a k8s cluster and how we can deploy it to Azure using Azure Kubernetes Services (AKS). However, it is really encouraged to have a deep read on the documentation, as some concepts can end up being a bit deep but it is really important to get them right (such as [Services](https://kubernetes.io/docs/concepts/services-networking/service/)).
+
+The interesting part about developing kubernetes applications is that we have a tool called `minikube` that allows us to spin up a local k8s cluster and deploy there our containers. The usual tool we use for that is `kubectl`, as a command line API. Then, what the commands to deploy onto our minikube test cluster will be the same to deploy to an AKS cluster hosted in Azure.
+
+> OBS: AKS is free, but the underlying VMs NOT! They give us the managing system, but we need to pay for the whole computation.
+> OBS2: In this other [repo](https://github.com/pmbrull/udacity-devops-capstone) you can find further information explaining different parts of the kubernetes architecture and an example of how we can programatically set up a cluster in AWS without using any kubernetes services.
+
+In the `kubernetes/` directory you can find the following files:
+* flask-deployment.yaml
+* flask-service.yaml
+* persistent-volume-claim.yaml
+* persistent-volume.yaml 
+* postgres-deployment.yaml 
+* postgres-secret.yaml
+* postgres-service.yaml
+
+In the `deployment` files we configure the container specifications, the number of replicas for that container, how should an update be performed and other metadata settings. The files that will be the most interesting for us right now are the `service` files, which is the abstraction of exposing an application to a network. In `flask-service` we are specifying how we will connect to the Flask application. With just 15 lines we are configuring a Load Balancer!
+
+> To install `minikube` you can refer to the following [link](https://kubernetes.io/docs/tasks/tools/install-minikube/).
+> IMPORTANT OBS: To test the application locally using minikube, we need to comment the Load Balancer line and use the `NodePort` instead.
+
+Finally, in the `postgres-secret` file we are setting the credentials for the database. Note how in the `flask-deployment` we are preparing environment variables linked to those secret values.
+
+### Deploying in AKS using Azure DevOps
+
+First of all let's prepare the AKS service. We will use the Cloud Shell and Azure CLI for that. As shown in the [docs](https://docs.microsoft.com/en-us/azure/aks/kubernetes-walkthrough):
+
+1. Create a Resource Group: `az group create --name k8s-workshop --location northeurope`
