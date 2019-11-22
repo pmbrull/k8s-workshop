@@ -174,8 +174,65 @@ In the `deployment` files we configure the container specifications, the number 
 
 Finally, in the `postgres-secret` file we are setting the credentials for the database. Note how in the `flask-deployment` we are preparing environment variables linked to those secret values.
 
-### Deploying in AKS using Azure DevOps
+### Deploying to AKS
 
 First of all let's prepare the AKS service. We will use the Cloud Shell and Azure CLI for that. As shown in the [docs](https://docs.microsoft.com/en-us/azure/aks/kubernetes-walkthrough):
 
 1. Create a Resource Group: `az group create --name k8s-workshop --location northeurope`
+1. Create the AKS cluster: `az aks create --resource-group k8s-workshop --name AKS-workshop --node-count 2 --enable-addons monitoring --generate-ssh-keys`. This can take a while.
+1. Install `kubectl`: `az aks install-cli`
+1. Link `kubectl` to the AKS cluster: `az aks get-credentials --resource-group k8s-workshop --name AKS-workshop`
+1. Check that we have a running cluster: `kubectl get nodes`
+
+```bash
+pmbrull@Azure:~$ kubectl get nodes
+NAME                                STATUS   ROLES   AGE     VERSION
+aks-nodepool1-12539767-vmss000000   Ready    agent   5m26s   v1.13.12
+aks-nodepool1-12539767-vmss000001   Ready    agent   5m31s   v1.13.12
+```
+
+Now, let's clone the repo in the Azure shell: `git clone https://github.com/pmbrull/k8s-workshop.git` and deploy our application:
+
+```bash
+pmbrull@Azure:~$ kubectl apply -f k8s-workshop/kubernetes/
+deployment.extensions/flask-backend-deployment created
+service/service-flask-backend created
+persistentvolumeclaim/postgres-pvc created
+persistentvolume/postgres-pv created
+deployment.extensions/deployment-postgres created
+secret/postgres-credentials created
+service/service-postgres created
+```
+
+By checking the `pods` we can see how many containers we have running in the application for each deployment:
+
+```bash
+pmbrull@Azure:~$ kubectl get pods
+NAME                                        READY   STATUS    RESTARTS   AGE
+deployment-postgres-5b45469595-lwl96        1/1     Running   0          2m6s
+flask-backend-deployment-695d556768-m7ntw   1/1     Running   0          2m7s
+flask-backend-deployment-695d556768-xgnm7   1/1     Running   0          2m7s
+```
+
+The cool part here is having a look at the services:
+
+```bash
+pmbrull@Azure:~$ kubectl get services
+NAME                    TYPE           CLUSTER-IP     EXTERNAL-IP     PORT(S)          AGE
+kubernetes              ClusterIP      10.0.0.1       <none>          443/TCP          21m
+service-flask-backend   LoadBalancer   10.0.108.120   52.142.85.252   5000:32441/TCP   3m1s
+service-postgres        ClusterIP      10.0.4.143     <none>          5432/TCP         3m
+```
+
+See how a LoadBalancer was created with an external IP that we can use to connect to our k8s cluster! Let's run some tests to check that everything is working as expected:
+
+```bash
+sh scripts/post_query.sh 52.142.85.252 5000 "create table account (id_user serial PRIMARY KEY, username VARCHAR(50) NOT NULL)"
+# Should return OK
+sh scripts/post_query.sh 52.142.85.252 5000 "insert into account (username) values ('pmbrull')"
+# Should return OK
+sh scripts/post_query.sh 52.142.85.252 5000 "select * from account"
+# Should return a json with the result
+```
+
+> OBS: building an AKS cluster creates a separate RG. In my case it is called `MC_k8s-workshop_AKS-workshop_northeurope`. In there you will find all the services that are being used to have everything up and running such as Virtual Networks, Route Tables and the Load Balancer.
