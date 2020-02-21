@@ -2,6 +2,17 @@
 
 *Getting started with containerization*
 
+## Requirements
+
+Before starting with the workshop, it'd be useful to:
+* Download this git [repo](https://github.com/pmbrull/k8s-workshop.git).
+* Install Docker on your machine. You can follow the official [guide](https://docs.docker.com/install/).
+* To run Kubernetes locally, you can make use of [minikube](https://minikube.sigs.k8s.io/docs/start/). It is a nice testing resource. If on Windows, configure [HyperV](https://minikube.sigs.k8s.io/docs/reference/drivers/hyperv/) + [enable HyperV](https://docs.microsoft.com/en-us/virtualization/hyper-v-on-windows/quick-start/enable-hyper-v) (in case you get errors initializing minikube).
+* If you install minikube, you will also need [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/) to interact with it. There is a note that specifies that Docker Desktop on Windows already ships `kubectl`. 
+
+Please, follow the *getting started* in the different installations to make sure that you have all tools ready. You should be able to run the following commands correctly:
+* ``
+
 ## Introduction
 
 Nowadays cloud technologies have become the *State of the Art* in the IT industry. This is a natural change due to on-premise infrastructure ending up being cumbersome to manage and companies needing teams just involved in guaranteeing a certain level of stability of the production environment (rather than the applications).
@@ -18,7 +29,7 @@ If, on top of that we add the capabilites of the **DevOps** philosophy, we will 
 
 ## Hello Docker
 
-> Make sure that you have Docker installed on your machine. You can follow the official [guide](https://docs.docker.com/install/linux/docker-ce/ubuntu/).
+> Make sure that you have Docker installed on your machine. You can follow the official [guide](https://docs.docker.com/install/).
 
 To get in touch with containerization we will start by introducing a possible use case. Suppose that we have an application that interacts with a Postgres DB but we want to skip the hassle of locally installing Postgres. To do so, we can use Docker to create a container with a running database for us.
 
