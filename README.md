@@ -238,7 +238,21 @@ service-flask-backend   LoadBalancer   10.0.108.120   52.142.85.252   5000:32441
 service-postgres        ClusterIP      10.0.4.143     <none>          5432/TCP         3m
 ```
 
-See how a LoadBalancer was created with an external IP that we can use to connect to our k8s cluster! Let's run some tests to check that everything is working as expected:
+See how a LoadBalancer was created with an external IP that we can use to connect to our k8s cluster!
+
+Before running any tests, we will install a cool feature that enables us to have a dashboard to navigate through the resources. This means checking deployments, pods and services and even getting into the pods and checking logs:
+
+```bash
+# Deploy the dashboard functionality
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.0.0-beta8/aio/deploy/recommended.yaml
+# Give us admin permissions over the dashboard
+kubectl create clusterrolebinding kubernetes-dashboard --clusterrole=cluster-admin --serviceaccount=kube-system:kubernetes-dashboard
+# Open the dashboard
+az aks browse --resource-group <my-resource-group> --name AKS-workshop
+
+```
+
+Let's run some tests to check that everything is working as expected:
 
 ```bash
 sh scripts/post_query.sh 52.142.85.252 5000 "create table account (id_user serial PRIMARY KEY, username VARCHAR(50) NOT NULL)"
