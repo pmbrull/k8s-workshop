@@ -10,8 +10,11 @@ Before starting with the workshop, it'd be useful to:
 * To run Kubernetes locally, you can make use of [minikube](https://minikube.sigs.k8s.io/docs/start/). It is a nice testing resource. If on Windows, configure [HyperV](https://minikube.sigs.k8s.io/docs/reference/drivers/hyperv/) + [enable HyperV](https://docs.microsoft.com/en-us/virtualization/hyper-v-on-windows/quick-start/enable-hyper-v) (in case you get errors initializing minikube). Note that to correctly run `minikube` with Windows, you should run your your cmd tool (cmd, Git Bash...) as administrator.
 * If you install minikube, you will also need [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/) to interact with it. There is a note that specifies that Docker Desktop on Windows already ships `kubectl`. 
 
+> OBS: To check the status of the HyperV in Windows, run the following command in PS as admin: `Get-WindowsOptionalFeature -FeatureName Microsoft-Hyper-V-All -Online`. Check if everything is enabled properly.
+
 Please, follow the *getting started* in the different installations to make sure that you have all tools ready. You should be able to run the following commands correctly:
-* ``
+* `docker run hello-world`
+* `minikube start`
 
 ## Introduction
 
