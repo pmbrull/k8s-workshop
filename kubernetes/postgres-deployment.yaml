@@ -1,13 +1,16 @@
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: deployment-postgres
 spec:
   replicas: 1
+  selector:
+    matchLabels:
+      name: database
   template:
     metadata:
       labels:
-        app: database
+        name: database
     spec:
       terminationGracePeriodSeconds: 180
       containers:
