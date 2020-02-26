@@ -172,6 +172,10 @@ The interesting part about developing kubernetes applications is that we have a 
 > OBS: AKS is free, but the underlying VMs NOT! They give us the managing system, but we need to pay for the whole computation.
 > OBS2: In this other [repo](https://github.com/pmbrull/udacity-devops-capstone) you can find further information explaining different parts of the kubernetes architecture and an example of how we can programatically set up a cluster in AWS without using any kubernetes services.
 
+This is the schema that we are going to build
+
+![img](./assets/schema.png)
+
 In the `kubernetes/` directory you can find the following files:
 * flask-deployment.yaml
 * flask-service.yaml
@@ -249,7 +253,6 @@ kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.0.0-b
 kubectl create clusterrolebinding kubernetes-dashboard --clusterrole=cluster-admin --serviceaccount=kube-system:kubernetes-dashboard
 # Open the dashboard
 az aks browse --resource-group <my-resource-group> --name AKS-workshop
-
 ```
 
 Let's run some tests to check that everything is working as expected:
