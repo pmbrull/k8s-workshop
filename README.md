@@ -45,7 +45,7 @@ We can think of an **Image** as a blueprint. By downloading an image to our mach
 docker pull postgres
 
 # Create a container and assign a name
-docker run --name some-postgres postgres
+docker run --name some-postgres -e POSTGRES_PASSWORD=mysecretpassword postgres
 ```
 
 > OBS: We could have just run `docker run` and if the image was not in the machine, it would have automatically been pulled.
